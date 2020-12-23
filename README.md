@@ -5,4 +5,4 @@
 -Use icp2.ipynb
 
 ### Experiment 3
--Use multiway_registration.py
+-Use icp_registration.py
