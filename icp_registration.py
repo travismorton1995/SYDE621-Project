@@ -1,4 +1,6 @@
+#Modified version of an Open3D tutorial:
 # examples/Python/Basic/icp_registration.py
+# http://www.open3d.org/docs/latest/tutorial/Basic/icp_registration.html
 
 import open3d as o3d
 import numpy as np
@@ -33,6 +35,7 @@ def prepare_dataset(voxel_size):
     print(":: Load two point clouds and disturb initial pose.")
     source = o3d.io.read_point_cloud("./stanford_bunny/stanford_bunny/data/bun000_Structured.pcd")
     target = o3d.io.read_point_cloud("./stanford_bunny/stanford_bunny/data/bun045_Structured.pcd")
+    #Initial transform estimate
     trans_init = np.asarray([[0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0],
                              [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
     source.transform(trans_init)
@@ -44,6 +47,9 @@ def prepare_dataset(voxel_size):
 
 def execute_global_registration(source_down, target_down, source_fpfh,
                                 target_fpfh, voxel_size):
+    '''Global registration in the form of RANSAC registration is used to generate a close guess
+        to what the transform should be. ICP requires the initial guess to be close or it will not
+        converge.'''
     distance_threshold = voxel_size * 1.5
     print(":: RANSAC registration on downsampled point clouds.")
     print("   Since the downsampling voxel size is %.3f," % voxel_size)
@@ -72,38 +78,23 @@ def refine_registration(source, target, source_fpfh, target_fpfh, voxel_size):
 if __name__ == "__main__":
     
     voxel_size = 0.005  # means 0.5cm for this dataset
+    
+    #Import Source and target and generate a downsompled version
     source, target, source_down, target_down, source_fpfh, target_fpfh = prepare_dataset(voxel_size)
     
+    #Perform global registration for a close intial guess
     result_ransac = execute_global_registration(source_down, target_down,
                                             source_fpfh, target_fpfh,
                                             voxel_size)
+    
+    #Evaluate and show results from global registration
     print(result_ransac)
     draw_registration_result(source_down, target_down, result_ransac.transformation)
-    
     threshold = 0.02
     #evaluation = o3d.pipelines.registration.evaluate_registration(source, target,
-    #                                                    threshold, result_ransac.transformation)
-    #print(evaluation)
-    
-    
-    #source = o3d.io.read_point_cloud("./stanford_bunny/stanford_bunny/data/bun000_Structured.pcd")
-    #target = o3d.io.read_point_cloud("./stanford_bunny/stanford_bunny/data/bun045_Structured.pcd")
-    
-    #source = o3d.io.read_point_cloud("../../TestData/ICP/cloud_bin_0.pcd")
-    #target = o3d.io.read_point_cloud("../../TestData/ICP/cloud_bin_1.pcd")
-    
-    #threshold = 0.02
-    #trans_init = np.asarray([[0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0],
-    #                         [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
-    #trans_init = np.asarray([[0.862, 0.011, -0.507, 0.5],
-    #                         [-0.139, 0.967, -0.215, 0.7],
-    #                         [0.487, 0.255, 0.835, -1.4], [0.0, 0.0, 0.0, 1.0]])
-    #draw_registration_result(source, target, trans_init)
-    #print("Initial alignment")
-    #evaluation = o3d.pipelines.registration.evaluate_registration(source, target,
-    #                                                    threshold, trans_init)
     #print(evaluation)
 
+    #Perform ICP using the global registration transform as an initial transform guess
     print("Apply point-to-point ICP")
     reg_p2p = o3d.pipelines.registration.registration_icp(
         source, target, threshold, result_ransac.transformation,
@@ -113,28 +104,4 @@ if __name__ == "__main__":
     print(reg_p2p.transformation)
     print("")
     draw_registration_result(source, target, reg_p2p.transformation)
-    
-    
-    
-    
-    
-    #print("Apply point-to-plane ICP")
-    #result_icp = refine_registration(source, target, source_fpfh, target_fpfh,
-    #                             voxel_size)
-    #print(result_icp)
-    #draw_registration_result(source, target, result_icp.transformation)
-
-    
-    
-    
-    
-    
-    #print("Apply point-to-plane ICP")
-    #reg_p2l = o3d.pipelines.registration.registration_icp(
-    #    source, target, threshold, trans_init,
-    #    o3d.pipelines.registration.TransformationEstimationPointToPlane())
-    #print(reg_p2l)
-    #print("Transformation is:")
-    #print(reg_p2l.transformation)
-    #print("")
-    #draw_registration_result(source, target, reg_p2l.transformation)
+   

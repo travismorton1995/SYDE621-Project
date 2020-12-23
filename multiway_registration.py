@@ -1,4 +1,7 @@
+#Modified version of an Open3D tutorial:
 # examples/Python/Advanced/multiway_registration.py
+# http://www.open3d.org/docs/0.6.0/tutorial/Advanced/multiway_registration.html
+
 import open3d as o3d
 from open3d import *
 import numpy as np
@@ -101,14 +104,14 @@ if __name__ == "__main__":
             max_correspondence_distance = max_correspondence_distance_fine,
             edge_prune_threshold = 0.25,
             reference_node = 0)
-    optimize = False
+    optimize = True
     if optimize == True:
+        print("I am optimizing")
         o3d.pipelines.registration.global_optimization(pose_graph,
-                #o3d.pipelines.registration.GlobalOptimizationLevenbergMarquardt(),
-                o3d.pipelines.registration.GlobalOptimizationGaussNewton(),                        
+                o3d.pipelines.registration.GlobalOptimizationLevenbergMarquardt(),
+                #o3d.pipelines.registration.GlobalOptimizationGaussNewton(),                        
                 o3d.pipelines.registration.GlobalOptimizationConvergenceCriteria(), option)
     
-        
 
     print("Transform points and display")
     threshold = 0.02
@@ -123,7 +126,6 @@ if __name__ == "__main__":
                                                         threshold, pose_graph.nodes[1].pose)
     print(evaluation)
         
-        
     o3d.visualization.draw_geometries(pcds_down)
     
     #transform here
@@ -136,4 +138,4 @@ if __name__ == "__main__":
         pcd_combined += pcds[point_id]
     pcd_combined_down = pcd_combined.voxel_down_sample(voxel_size = voxel_size)
     o3d.io.write_point_cloud("multiway_registration.pcd", pcd_combined_down)
-    o3d.visualization.draw_geometries([pcd_combined_down])
+    #o3d.visualization.draw_geometries([pcd_combined_down])
