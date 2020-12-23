@@ -1,5 +1,8 @@
 # SYDE621-Project
- Final Project code for SYDE621- December 2020
+## Point Cloud Registration Using Iterative Closest Point
+ Final Project code for SYDE621
+ December 2020
+ Travis Morton
 
 ### Experiment 1 & 2
 -Use icp2.ipynb
